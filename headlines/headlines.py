@@ -15,7 +15,7 @@ RSS_FEEDS = {
 
 DEFAULTS={
     'publication':'bbc',
-    'city':'Beijing,CN'
+    'city':'北京'
 }
 
 # @app.route("/", methods=['GET', 'POST'])
@@ -28,6 +28,7 @@ def home():
     city = request.args.get('city')
     if not city:
         city = DEFAULTS['city']
+    # print(city)
     weather = get_weather(city)
     return render_template("home.html", articles=articles,weather=weather)
 def get_news(query):
@@ -41,20 +42,33 @@ def get_news(query):
     return feed['entries']
 
 def get_weather(query):
-    api_url="http://api.openweathermap.org/data/2.5/weather?q={}&units=metric&appid=a567483dd49d04a2a38bfe331ba79803"
-    # query = urllib.parse.unquote(query)
-    # print(type(query))
+    # api_url="http://api.openweathermap.org/data/2.5/weather?q={}&units=metric&appid=a567483dd49d04a2a38bfe331ba79803"
+    # # query = urllib.parse.unquote(query)
+    # # print(type(query))
+    # url = api_url.format(query)
+    # print(url)
+    # data = requests.get(url)
+    # parsed = data.json()
+    # weather = None
+    # print(parsed.get("weather"))
+    # if parsed.get("weather"):
+    #     weather = {
+    #         "description":parsed["weather"][0]["description"],
+    #         "temperature":parsed["main"]["temp"],
+    #         "city":parsed["name"]
+    #     }
+    api_url = "https://www.sojson.com/open/api/weather/json.shtml?city={}"
+    query = urllib.parse.unquote(query)
     url = api_url.format(query)
-    print(url)
     data = requests.get(url)
     parsed = data.json()
     weather = None
-    print(parsed.get("weather"))
-    if parsed.get("weather"):
+    # print(parsed)
+    if parsed:
         weather = {
-            "description":parsed["weather"][0]["description"],
-            "temperature":parsed["main"]["temp"],
-            "city":parsed["name"]
+            "city":parsed['city'],
+            "description":parsed['data']['forecast'][0]['type'],
+            "temperature":parsed['data']['wendu']
         }
     return weather
 
