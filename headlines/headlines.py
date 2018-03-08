@@ -9,14 +9,14 @@ import urllib.parse
 app = Flask(__name__)
 
 RSS_FEEDS = {
-    'bbc': 'http://feeds.bbci.co.uk/news/rss.xml',
-    'fox': 'http://feeds.foxnews.com/foxnews/latest',
-    'iol': 'http://www.iol.co.za/cmlink/1.640'
+    'qq': 'http://news.qq.com/newsgn/rss_newsgn.xml',
+    'ft': 'http://www.ftchinese.com/rss/news',
+    'ifeng': 'http://news.ifeng.com/rss/index.xml'
 }
 
 DEFAULTS = {
-    'publication': 'bbc',
-    'city': 'London,uk',
+    'publication': 'ifeng',
+    'city': 'beijing,cn',
     'currency_from': 'CNY',
     'currency_to': 'USD',
 
@@ -78,9 +78,10 @@ def get_news(query):
     # query = str(request.args.get("publication"))
     # print("query",query.lower())
     if not query or query.lower() not in RSS_FEEDS:
-        publication = "bbc"
+        publication = "ft"
     else:
         publication = query.lower()
+    print(RSS_FEEDS[publication])
     feed = feedparser.parse(RSS_FEEDS[publication])
     return feed['entries']
 
@@ -90,7 +91,7 @@ def get_weather(query):
     # query = urllib.parse.unquote(query)
     # print(type(query))
     url = WEATHER_URL.format(query)
-    print(url)
+
     data = requests.get(url)
     parsed = data.json()
     weather = None
