@@ -14,7 +14,9 @@
         <h1>Headlines</h1>
         <h2>天气预报</h2>
         <p>城市:<b>{{weather.city}}</b></p>
+        <p>pm2.5:<b>{{weather.pm25}}</b></p>
         <p>{{weather.description}}|{{weather.temperature}}°c</p>
+        <p>公告|{{weather.notice}}°c</p>
         <h2>Headlines</h2>
         {% for article in articles %}
             <b><a href="{{article.link}}>">{{article.title}}</a></b><br />

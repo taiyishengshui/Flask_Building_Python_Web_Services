@@ -13,24 +13,27 @@ RSS_FEEDS = {
     'iol': 'http://www.iol.co.za/cmlink/1.640'
 }
 
-DEFAULTS={
-    'publication':'bbc',
-    'city':'北京'
+DEFAULTS = {
+    'publication': 'bbc',
+    'city': '北京'
 }
+
 
 # @app.route("/", methods=['GET', 'POST'])
 @app.route("/")
 def home():
     publication = request.args.get('publication')
     if not publication:
-        publication=DEFAULTS['publication']
+        publication = DEFAULTS['publication']
     articles = get_news(publication)
     city = request.args.get('city')
     if not city:
         city = DEFAULTS['city']
     # print(city)
     weather = get_weather(city)
-    return render_template("home.html", articles=articles,weather=weather)
+    return render_template("home.html", articles=articles, weather=weather)
+
+
 def get_news(query):
     # query = str(request.args.get("publication"))
     # print("query",query.lower())
@@ -40,6 +43,7 @@ def get_news(query):
         publication = query.lower()
     feed = feedparser.parse(RSS_FEEDS[publication])
     return feed['entries']
+
 
 def get_weather(query):
     # api_url="http://api.openweathermap.org/data/2.5/weather?q={}&units=metric&appid=a567483dd49d04a2a38bfe331ba79803"
@@ -66,9 +70,11 @@ def get_weather(query):
     # print(parsed)
     if parsed:
         weather = {
-            "city":parsed['city'],
-            "description":parsed['data']['forecast'][0]['type'],
-            "temperature":parsed['data']['wendu']
+            "city": parsed['city'],
+            "pm25": parsed['data']['pm25'],
+            "description": parsed['data']['forecast'][0]['type'],
+            "temperature": parsed['data']['wendu'],
+            "notice": parsed['data']['forecast'][0]['notice']
         }
     return weather
 
@@ -81,7 +87,6 @@ def get_weather(query):
 
 if __name__ == '__main__':
     app.run(port=5000, debug=True)
-
 
 # def get_news():
 #     query = str(request.form.get("publication"))
