@@ -1,8 +1,9 @@
 # /usr/bin/python3
 import feedparser
-from flask import Flask, render_template
+from flask import Flask, render_template, make_response
 from flask import request
 import requests
+import datetime
 import urllib.parse
 
 app = Flask(__name__)
@@ -25,29 +26,44 @@ WEATHER_URL = "http://api.openweathermap.org/data/2.5/weather?q={}&units=metric&
 CURRENCY_URL = "https://openexchangerates.org//api/latest.json?app_id=aec14afce2de44d0b37d56d171675ec8"
 
 
+def get_value_with_fallback(key):
+    if request.args.get(key):
+        return request.args.get(key)
+    if request.cookies.get(key):
+        return request.cookies.get(key)
+    return DEFAULTS[key]
+
+
 # @app.route("/", methods=['GET', 'POST'])
 @app.route("/")
 def home():
-    publication = request.args.get('publication')
-    if not publication:
-        publication = DEFAULTS['publication']
+    # get customised headlines, based on user input or default
+    publication = get_value_with_fallback("publication")
+
+    # get customised weather based on user input or default
     articles = get_news(publication)
-    city = request.args.get('city')
-    if not city:
-        city = DEFAULTS['city']
-    # print(city)
+    city = get_value_with_fallback("city")
     weather = get_weather(city)
-    currency_from = request.args.get("currency_from")
-    if not currency_from:
-        currency_from = DEFAULTS['currency_from']
-    currency_to = request.args.get("currency_to")
-    if not currency_to:
-        currency_to = DEFAULTS['currency_to']
+
+    # get customised currency based on user input or default
+    currency_from = get_value_with_fallback("currency_from")
+    currency_to = get_value_with_fallback("currency_to")
     rate, currencies = get_rates(currency_from, currency_to)
-    # rate = get_rates(currency_from, currency_to)
-    return render_template("home.html", articles=articles, weather=weather,
-                           currency_from=currency_from, currency_to=currency_to, rate=rate,
-                           currencies=sorted(currencies))
+
+    # save cookies and return template
+    response = make_response(render_template("home.html",
+                                             articles=articles,
+                                             weather=weather,
+                                             currency_from=currency_from,
+                                             currency_to=currency_to,
+                                             rate=rate,
+                                             currencies=sorted(currencies)))
+    expires = datetime.datetime.now() + datetime.timedelta(days=365)
+    response.set_cookie("publication", publication, expires=expires)
+    response.set_cookie("city", city, expires=expires)
+    response.set_cookie("currency_from", currency_from, expires=expires)
+    response.set_cookie("currency_to", currency_to, expires=expires)
+    return response
 
 
 def get_rates(frm, to):
@@ -78,7 +94,6 @@ def get_weather(query):
     data = requests.get(url)
     parsed = data.json()
     weather = None
-    print(parsed.get("weather"))
     if parsed.get("weather"):
         weather = {
             "description": parsed["weather"][0]["description"],
@@ -130,3 +145,27 @@ if __name__ == '__main__':
 #     feed = feedparser.parse(RSS_FEEDS[publication])
 #     # print(feed)
 #     return render_template("home.html", articles=feed['entries'])
+
+
+# old home
+# def home():
+#     publication = request.args.get('publication')
+#     if not publication:
+#         publication = DEFAULTS['publication']
+#     articles = get_news(publication)
+#     city = request.args.get('city')
+#     if not city:
+#         city = DEFAULTS['city']
+#     # print(city)
+#     weather = get_weather(city)
+#     currency_from = request.args.get("currency_from")
+#     if not currency_from:
+#         currency_from = DEFAULTS['currency_from']
+#     currency_to = request.args.get("currency_to")
+#     if not currency_to:
+#         currency_to = DEFAULTS['currency_to']
+#     rate, currencies = get_rates(currency_from, currency_to)
+#     # rate = get_rates(currency_from, currency_to)
+#     return render_template("home.html", articles=articles, weather=weather,
+#                            currency_from=currency_from, currency_to=currency_to, rate=rate,
+#                            currencies=sorted(currencies))
