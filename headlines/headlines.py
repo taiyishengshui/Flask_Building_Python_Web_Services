@@ -15,7 +15,7 @@ RSS_FEEDS = {
 
 DEFAULTS={
     'publication':'bbc',
-    'city':'London,UK'
+    'city':'Beijing,CN'
 }
 
 # @app.route("/", methods=['GET', 'POST'])
