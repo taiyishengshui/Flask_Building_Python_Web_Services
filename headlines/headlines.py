@@ -15,8 +15,14 @@ RSS_FEEDS = {
 
 DEFAULTS = {
     'publication': 'bbc',
-    'city': '北京'
+    'city': 'London,uk',
+    'currency_from': 'CNY',
+    'currency_to': 'USD',
+
 }
+
+WEATHER_URL = "http://api.openweathermap.org/data/2.5/weather?q={}&units=metric&appid=a567483dd49d04a2a38bfe331ba79803"
+CURRENCY_URL = "https://openexchangerates.org//api/latest.json?app_id=aec14afce2de44d0b37d56d171675ec8"
 
 
 # @app.route("/", methods=['GET', 'POST'])
@@ -31,7 +37,25 @@ def home():
         city = DEFAULTS['city']
     # print(city)
     weather = get_weather(city)
-    return render_template("home.html", articles=articles, weather=weather)
+    currency_from = request.args.get("currency_from")
+    if not currency_from:
+        currency_from = DEFAULTS['currency_from']
+    currency_to = request.args.get("currency_to")
+    if not currency_to:
+        currency_to = DEFAULTS['currency_to']
+    rate, currencies = get_rates(currency_from, currency_to)
+    # rate = get_rates(currency_from, currency_to)
+    return render_template("home.html", articles=articles, weather=weather,
+                           currency_from=currency_from, currency_to=currency_to, rate=rate,
+                           currencies=sorted(currencies))
+
+
+def get_rates(frm, to):
+    all_currency = requests.get(CURRENCY_URL)
+    parsed = all_currency.json()['rates']
+    frm_rate = parsed.get(frm.upper())
+    to_rate = parsed.get(to.upper())
+    return (to_rate / frm_rate, parsed.keys())
 
 
 def get_news(query):
@@ -47,36 +71,40 @@ def get_news(query):
 
 def get_weather(query):
     # api_url="http://api.openweathermap.org/data/2.5/weather?q={}&units=metric&appid=a567483dd49d04a2a38bfe331ba79803"
-    # # query = urllib.parse.unquote(query)
-    # # print(type(query))
-    # url = api_url.format(query)
-    # print(url)
-    # data = requests.get(url)
-    # parsed = data.json()
-    # weather = None
-    # print(parsed.get("weather"))
-    # if parsed.get("weather"):
-    #     weather = {
-    #         "description":parsed["weather"][0]["description"],
-    #         "temperature":parsed["main"]["temp"],
-    #         "city":parsed["name"]
-    #     }
-    api_url = "https://www.sojson.com/open/api/weather/json.shtml?city={}"
-    query = urllib.parse.unquote(query)
-    url = api_url.format(query)
+    # query = urllib.parse.unquote(query)
+    # print(type(query))
+    url = WEATHER_URL.format(query)
+    print(url)
     data = requests.get(url)
     parsed = data.json()
     weather = None
-    # print(parsed)
-    if parsed:
+    print(parsed.get("weather"))
+    if parsed.get("weather"):
         weather = {
-            "city": parsed['city'],
-            "pm25": parsed['data']['pm25'],
-            "description": parsed['data']['forecast'][0]['type'],
-            "temperature": parsed['data']['wendu'],
-            "notice": parsed['data']['forecast'][0]['notice']
+            "description": parsed["weather"][0]["description"],
+            "temperature": parsed["main"]["temp"],
+            "city": parsed["name"],
+            "country": parsed["sys"]["country"],
         }
     return weather
+
+    # 国内api
+    # api_url = "https://www.sojson.com/open/api/weather/json.shtml?city={}"
+    # query = urllib.parse.unquote(query)
+    # url = api_url.format(query)
+    # data = requests.get(url)
+    # parsed = data.json()
+    # weather = None
+    # # print(parsed)
+    # if parsed:
+    #     weather = {
+    #         "city": parsed['city'],
+    #         "pm25": parsed['data']['pm25'],
+    #         "description": parsed['data']['forecast'][0]['type'],
+    #         "temperature": parsed['data']['wendu'],
+    #         "notice": parsed['data']['forecast'][0]['notice']
+    #     }
+    # return weather
 
 
 # @app.route("/<publication>")
