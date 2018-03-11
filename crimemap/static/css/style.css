@@ -30,3 +30,8 @@ background: lightsteelblue;
 	float: right;
 	width: 25%
 }
+
+#error {
+    color: red;
+}
+
