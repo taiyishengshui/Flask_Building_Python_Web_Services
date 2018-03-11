@@ -1,7 +1,0 @@
-
-weathermapapi
-http://api.openweathermap.org/data/2.5/weather?q=London,uk&units=metric&appid=a567483dd49d04a2a38bfe331ba79803
-
-https://openexchangerates.org/account/app-ids
-App ID:
-aec14afce2de44d0b37d56d171675ec8
