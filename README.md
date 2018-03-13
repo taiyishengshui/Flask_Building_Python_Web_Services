@@ -127,7 +127,10 @@ sudo service apache2 reload
 sudo service apache2 start  或者
 sudo apachectl start
 ```
-
+查看apache2的log
+```
+sudo tail -f /var/log/apache2/error.log
+```
 
 停止：
 ```
